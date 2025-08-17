@@ -140,7 +140,7 @@ async def call_overlay(video_path: str, translated_srt_path: str, style_json: st
                         "video": (os.path.basename(video_path), vf, "video/mp4"),
                         "srt": (os.path.basename(translated_srt_path), sf, "text/plain"),
                     }
-                    data = {"style": style_json}
+                    data = {"style_json": style_json}
                     r = await client.post(OVERLAY_URL, files=files, data=data, headers=_headers())
                 if r.is_error:
                     raise HTTPException(status_code=502, detail=f"Overlay error: {r.status_code} {r.text}")
