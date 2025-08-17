@@ -1,4 +1,5 @@
 # translation.py
+from fastapi import FastAPI
 from fastapi import APIRouter, File, UploadFile, Form
 from fastapi.responses import FileResponse, JSONResponse
 import os, shutil, tempfile, re, json
@@ -226,7 +227,8 @@ def write_srt_file(aligned, output_path: str):
             f.write(f"{sub['translated_text']}\n\n")
 
 # ================== Endpoint ==================
-
+app = FastAPI(title="Subtitle Translator API")
+app.include_router(router)
 @router.post("/translate")
 async def translate_endpoint(
     srt: UploadFile = File(...),
