@@ -228,8 +228,7 @@ def write_srt_file(aligned, output_path: str):
 
 # ================== Endpoint ==================
 app = FastAPI(title="Subtitle Translator API")
-app.include_router(router)
-@router.post("/translate")
+@app.post("/translate")
 async def translate_endpoint(
     srt: UploadFile = File(...),
     target_lang: str = Form(...),
