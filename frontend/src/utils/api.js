@@ -1,4 +1,9 @@
-import { API_ENDPOINTS, DEFAULT_FETCH_OPTIONS } from "../config.js";
+import {
+  API_ENDPOINTS,
+  DEFAULT_FETCH_OPTIONS,
+  UPLOAD_FETCH_OPTIONS,
+  DOWNLOAD_FETCH_OPTIONS,
+} from "../config.js";
 
 /**
  * Check if the backend is available
@@ -32,7 +37,7 @@ export async function processInitialVideo(file, targetLanguage) {
   const response = await fetch(API_ENDPOINTS.PROCESS_INITIAL, {
     method: "POST",
     body: formData,
-    ...DEFAULT_FETCH_OPTIONS,
+    ...UPLOAD_FETCH_OPTIONS,
   });
 
   if (!response.ok) {
@@ -54,7 +59,7 @@ export async function applyOverlay(jobId, styleConfig) {
   const response = await fetch(API_ENDPOINTS.OVERLAY, {
     method: "POST",
     body: formData,
-    ...DEFAULT_FETCH_OPTIONS,
+    ...DOWNLOAD_FETCH_OPTIONS,
   });
 
   if (!response.ok) {
@@ -62,5 +67,6 @@ export async function applyOverlay(jobId, styleConfig) {
     throw new Error(`Overlay failed: ${response.status} - ${errorText}`);
   }
 
+  // Return the blob for download
   return await response.blob();
 }

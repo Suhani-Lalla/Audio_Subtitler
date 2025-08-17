@@ -13,6 +13,7 @@ from fastapi.responses import StreamingResponse
 from starlette.background import BackgroundTask
 from dotenv import load_dotenv
 from fastapi.middleware.cors import CORSMiddleware
+import zipfile
 # =======================
 # Config & Environment
 # =======================
@@ -21,10 +22,6 @@ load_dotenv()
 EXTRACTOR_URL = os.getenv("EXTRACTOR_URL", "http://kubeflow-dgx-service/pipeline/extract")
 TRANSLATOR_URL = os.getenv("TRANSLATOR_URL", "https://your-render-translate.onrender.com/translate")
 OVERLAY_URL    = os.getenv("OVERLAY_URL",    "https://your-render-overlay.onrender.com/overlay")
-
-EXTRACTOR_TOKEN  = os.getenv("EXTRACTOR_TOKEN")
-TRANSLATOR_TOKEN = os.getenv("TRANSLATOR_TOKEN")
-OVERLAY_TOKEN    = os.getenv("OVERLAY_TOKEN")
 
 CONNECT_TIMEOUT = float(os.getenv("CONNECT_TIMEOUT", "15"))
 READ_TIMEOUT    = float(os.getenv("READ_TIMEOUT", "300"))
@@ -40,11 +37,9 @@ JOB_STORE: Dict[str, Dict[str, str]] = {}
 # =======================
 # Utilities
 # =======================
-def _headers(token: Optional[str] = None) -> Dict[str, str]:
-    h = {"Accept": "*/*"}
-    if token:
-        h["Authorization"] = f"Bearer {token}"
-    return h
+def _headers() -> Dict[str, str]:
+    return {"Accept": "*/*"}
+
 
 async def _sleep_backoff(attempt: int) -> None:
     delay = INITIAL_BACKOFF * (BACKOFF_FACTOR ** attempt)
@@ -71,29 +66,32 @@ def _save_temp_bytes(data: bytes, suffix: str) -> str:
 # Orchestration Steps
 # =======================
 async def call_extractor(video_path: str) -> (str, str):
-    """Extractor always returns .srt + .txt in multipart."""
+    """Extractor now returns a ZIP containing .srt and .txt files."""
     for attempt in range(MAX_RETRIES):
         try:
             async with get_httpx_client() as client:
                 with open(video_path, "rb") as f:
                     files = {"file": (os.path.basename(video_path), f, "video/mp4")}
-                    r = await client.post(EXTRACTOR_URL, files=files, headers=_headers(EXTRACTOR_TOKEN))
+                    r = await client.post(EXTRACTOR_URL, files=files, headers=_headers())
 
                 if r.is_error:
                     raise HTTPException(status_code=502, detail=f"Extractor error: {r.status_code} {r.text}")
 
-                
-                parser = multipart.MultipartParser(io.BytesIO(r.content), r.headers.get("content-type", ""))
+                # Handle zip file in memory
                 srt_path = txt_path = None
-                for part in parser.parts():
-                    filename = part.filename or ""
-                    if filename.endswith(".srt"):
-                        srt_path = _save_temp_bytes(part.raw, ".srt")
-                    elif filename.endswith(".txt"):
-                        txt_path = _save_temp_bytes(part.raw, ".txt")
+                try:
+                    zip_bytes = io.BytesIO(r.content)
+                    with zipfile.ZipFile(zip_bytes) as zf:
+                        for name in zf.namelist():
+                            if name.endswith(".srt"):
+                                srt_path = _save_temp_bytes(zf.read(name), ".srt")
+                            elif name.endswith(".txt"):
+                                txt_path = _save_temp_bytes(zf.read(name), ".txt")
+                except Exception as e:
+                    raise HTTPException(status_code=502, detail=f"Invalid extractor ZIP: {e}")
 
                 if not (srt_path and txt_path):
-                    raise HTTPException(status_code=502, detail="Extractor response missing .srt or .txt")
+                    raise HTTPException(status_code=502, detail="Extractor ZIP missing .srt or .txt")
 
                 return srt_path, txt_path
 
@@ -114,7 +112,7 @@ async def call_translator(srt_path: str, txt_path: str, target_lang: str) -> str
                         "script": (os.path.basename(txt_path), tf, "text/plain"),
                     }
                     data = {"target_lang": target_lang}
-                    r = await client.post(TRANSLATOR_URL, files=files, data=data, headers=_headers(TRANSLATOR_TOKEN))
+                    r = await client.post(TRANSLATOR_URL, files=files, data=data, headers=_headers())
 
                 if r.is_error:
                     raise HTTPException(status_code=502, detail=f"Translator error: {r.status_code} {r.text}")
@@ -143,7 +141,7 @@ async def call_overlay(video_path: str, translated_srt_path: str, style_json: st
                         "srt": (os.path.basename(translated_srt_path), sf, "text/plain"),
                     }
                     data = {"style": style_json}
-                    r = await client.post(OVERLAY_URL, files=files, data=data, headers=_headers(OVERLAY_TOKEN))
+                    r = await client.post(OVERLAY_URL, files=files, data=data, headers=_headers())
                 if r.is_error:
                     raise HTTPException(status_code=502, detail=f"Overlay error: {r.status_code} {r.text}")
 

@@ -13,6 +13,7 @@ const OverlayPage = () => {
   const [jobId, setJobId] = useState(null);
   const [srtData, setSrtData] = useState([]);
   const [isDownloading, setIsDownloading] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
   const [styleConfig, setStyleConfig] = useState({
     font: "Arial",
     font_size: 28,
@@ -73,6 +74,7 @@ const OverlayPage = () => {
     }
 
     setIsDownloading(true);
+    setIsProcessing(true);
 
     try {
       // Send job_id and style configuration to backend for final processing
@@ -86,14 +88,24 @@ const OverlayPage = () => {
         /\.[^/.]+$/,
         ""
       )}_with_subtitles.mp4`;
+      document.body.appendChild(a);
       a.click();
+      document.body.removeChild(a);
 
-      URL.revokeObjectURL(downloadUrl);
+      // Clean up the URL after a short delay
+      setTimeout(() => {
+        URL.revokeObjectURL(downloadUrl);
+      }, 1000);
     } catch (error) {
       console.error("Error downloading video:", error);
-      alert(`Error downloading video: ${error.message}`);
+      // More user-friendly error message
+      const errorMessage = error.message.includes("Failed to fetch")
+        ? "Unable to connect to the server. Please check if the backend is running."
+        : error.message;
+      alert(`Error downloading video: ${errorMessage}`);
     } finally {
       setIsDownloading(false);
+      setIsProcessing(false);
     }
   };
 
@@ -154,13 +166,18 @@ const OverlayPage = () => {
 
           <Button
             onClick={handleDownload}
-            disabled={isDownloading}
+            disabled={isDownloading || isProcessing}
             className="bg-primary hover:bg-primary/90 text-primary-foreground"
           >
             {isDownloading ? (
               <>
                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                 Processing...
+              </>
+            ) : isProcessing ? (
+              <>
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                Applying Overlay...
               </>
             ) : (
               <>

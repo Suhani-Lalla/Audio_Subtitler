@@ -12,6 +12,24 @@ export const DEFAULT_FETCH_OPTIONS = {
   mode: "cors",
   credentials: "omit",
   headers: {
-    Accept: "application/json",
+    Accept: "*/*",
+  },
+};
+
+// Specific options for file uploads
+export const UPLOAD_FETCH_OPTIONS = {
+  mode: "cors",
+  credentials: "omit",
+  headers: {
+    Accept: "*/*",
+  },
+};
+
+// Specific options for file downloads
+export const DOWNLOAD_FETCH_OPTIONS = {
+  mode: "cors",
+  credentials: "omit",
+  headers: {
+    Accept: "*/*",
   },
 };

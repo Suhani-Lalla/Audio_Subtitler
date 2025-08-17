@@ -1,220 +1,79 @@
 # Video Subtitle Editor Frontend
 
-A modern React frontend for video subtitle processing with AI-powered transcription, translation, and live preview capabilities.
+A modern React frontend for the Video Subtitle Editor that communicates with the backend orchestrator to process videos and generate subtitles.
 
-## ✨ Features
+## Features
 
-### 🎯 Two-Page Architecture
+- **Video Upload**: Drag and drop or click to upload video files
+- **Language Selection**: Choose from multiple target languages for subtitle translation
+- **Real-time Preview**: See subtitle changes in real-time as you customize
+- **Style Customization**: Customize font, color, position, and other subtitle properties
+- **Download**: Download the final video with burned-in subtitles
 
-- **Home Page**: Clean video upload interface with language selection
-- **Overlay Page**: Professional subtitle editor with live preview
+## Prerequisites
 
-### 🎨 Beautiful Design
-
-- Modern color palette inspired by natural tones (Dusky Rose, Thistle, Hawthorne Green, Royal Scepter, Blue Noir)
-- Soft gradients and shadows for depth
-- Responsive design for desktop and mobile
-- Smooth animations and hover effects
-
-### 🎬 Video & Canvas Setup
-
-- HTML5 video player with custom controls
-- Transparent canvas overlay for real-time subtitle rendering
-- Dynamic canvas resizing to match video dimensions
-- Frame-by-frame subtitle drawing synchronized with video playback
-- Instant style updates on canvas
-
-### 🎛️ Comprehensive Style Controls
-
-- **Font & Text**: Family, size (10-72px), bold, italic
-- **Colors**: Text color and outline color with visual pickers
-- **Outline & Shadow**: Thickness (0-5px) and shadow offset (0-5px)
-- **Position**: 9-point alignment system and vertical offset (-100 to +100px)
-
-### 🎨 Presets Gallery
-
-- 5 built-in professional presets:
-  - Classic White: Clean white text with black outline
-  - Bold Yellow: High-visibility yellow text
-  - Elegant Script: Stylish italic text with subtle shadow
-  - Gaming Style: Bold impact font for gaming videos
-  - Minimal Clean: Simple text without outline or shadow
-- Visual preview cards with style badges
-- One-click preset application
-
-### ⚡ Live Preview
-
-- Real-time canvas updates as you adjust controls
-- Proper subtitle rendering with fillText, strokeText, and shadow
-- Synchronized with video playback time
-- Current subtitle display for reference
-
-### 🔄 Backend Integration
-
-- `/process_initial` endpoint for video extraction + translation (returns job_id)
-- `/overlay` endpoint for final video processing with customizations
-- Job-based workflow with session storage
-- Proper FormData handling for file uploads
-- Progress indicators and error handling
-- Final video download functionality
-
-## 🔄 API Workflow
-
-### Two-Step Process
-
-1. **Initial Processing** (`/process_initial`):
-
-   - User uploads video and selects target language
-   - Backend extracts audio, transcribes, and translates
-   - Returns a `job_id` for tracking
-   - Frontend stores job_id in session storage
-
-2. **Overlay Processing** (`/overlay`):
-   - User customizes subtitle styles
-   - Frontend sends job_id and style configuration
-   - Backend applies subtitles with customizations
-   - Returns final video for download
-
-### Configuration
-
-Edit `src/config.js` to change backend URL:
-
-```javascript
-export const API_BASE_URL = "http://localhost:8000";
-```
-
-## 🚀 Getting Started
-
-### Prerequisites
-
-- Node.js 18+
+- Node.js (v18 or higher)
 - pnpm (recommended) or npm
+- Backend orchestrator running on `http://localhost:8000`
 
-### Installation
+## Installation
+
+1. Install dependencies:
 
 ```bash
-# Install dependencies
 pnpm install
-
-# Start development server
-pnpm run dev
-
-# Build for production
-pnpm run build
 ```
 
-### Development
+2. Start the development server:
 
 ```bash
-# Start with host access (for testing across devices)
-pnpm run dev --host
-
-# Test overlay page directly (bypasses upload)
-# Navigate to http://localhost:5173/test
+pnpm dev
 ```
 
-## 🏗️ Project Structure
+3. Open your browser and navigate to `http://localhost:5173`
 
-```
-src/
-├── components/
-│   ├── ui/                 # shadcn/ui components
-│   ├── StyleSidebar.jsx    # Style controls and presets
-│   └── VideoPlayer.jsx     # Video player with canvas overlay
-├── pages/
-│   ├── HomePage.jsx        # Video upload and language selection
-│   ├── OverlayPage.jsx     # Subtitle editor interface
-│   └── TestOverlayPage.jsx # Test route for development
-├── config.js               # Backend API configuration
-├── App.jsx                 # Main app with routing
-└── App.css                 # Custom styles and color palette
-```
+## Backend Integration
 
-## 🎨 Color Palette
+This frontend is designed to work with the backend orchestrator (`orchestrator.py`). Make sure your backend is running on `http://localhost:8000` before using the frontend.
 
-| Color Name      | HEX     | Usage                  |
-| --------------- | ------- | ---------------------- |
-| Dusky Rose      | #D9BCAF | Secondary, accents     |
-| Thistle         | #8A9688 | Muted elements         |
-| Hawthorne Green | #283D3B | Primary, buttons       |
-| Royal Scepter   | #795663 | Muted foreground       |
-| Blue Noir       | #011627 | Dark text, backgrounds |
+### API Endpoints
 
-## 🔧 Backend Integration
+The frontend communicates with the following backend endpoints:
 
-The frontend expects a FastAPI backend with these endpoints:
+- `POST /process_initial` - Upload video and start processing
+- `POST /overlay` - Apply subtitle overlay with customizations
+- `GET /healthz` - Check backend health status
 
-### POST `/pipeline/process`
+### Workflow
 
-- **Purpose**: Full pipeline (transcription + translation + overlay)
-- **Input**: FormData with `video`, `target_language`, `style_json`
-- **Output**: Processed video with burned-in subtitles
+1. **Upload Video**: User uploads an MP4 video file
+2. **Select Language**: User chooses target language for subtitle translation
+3. **Process Initial**: Frontend calls `/process_initial` to extract audio and translate
+4. **Customize Style**: User customizes subtitle appearance (font, color, position)
+5. **Apply Overlay**: Frontend calls `/overlay` with job_id and style configuration
+6. **Download**: User downloads the final video with burned-in subtitles
 
-### POST `/overlay/overlay`
+## Configuration
 
-- **Purpose**: Overlay existing SRT onto video
-- **Input**: FormData with `video`, `srt`, `style_json`
-- **Output**: Video with burned-in subtitles
+The API configuration is located in `src/config.js`. You can modify the `API_BASE_URL` if your backend is running on a different port or host.
 
-## 📱 Usage Flow
+## Development
 
-1. **Upload**: User uploads video and selects target language on Home page
-2. **Process**: Video is sent to backend for transcription/translation
-3. **Edit**: User customizes subtitle appearance on Overlay page with live preview
-4. **Download**: Final video with burned-in subtitles is generated and downloaded
+- Built with React 19 and Vite
+- Uses Tailwind CSS for styling
+- Includes shadcn/ui components
+- Supports hot module replacement for development
 
-## 🛠️ Technologies Used
+## Build for Production
 
-- **React 19** with modern hooks
-- **React Router** for navigation
-- **Tailwind CSS** for styling
-- **shadcn/ui** component library
-- **Lucide React** for icons
-- **Canvas API** for subtitle rendering
-- **HTML5 Video API** for video playback
-
-## 🎯 Key Features Implementation
-
-### Live Preview System
-
-- Canvas element overlaid on video
-- Real-time subtitle rendering using Canvas 2D API
-- Synchronized with video `timeupdate` events
-- Instant updates when style changes
-
-### Style JSON Format
-
-```json
-{
-  "font": "Arial",
-  "font_size": 28,
-  "bold": false,
-  "italic": false,
-  "font_color": "#FFFFFF",
-  "outline_color": "#000000",
-  "outline_thickness": 2,
-  "shadow_offset": 0,
-  "alignment": 2,
-  "margin_v": 30
-}
+```bash
+pnpm build
 ```
 
-### Alignment System
+The built files will be in the `dist` directory.
 
-- 1-3: Bottom (Left, Center, Right)
-- 4-6: Middle (Left, Center, Right)
-- 7-9: Top (Left, Center, Right)
+## Troubleshooting
 
-## 🚀 Deployment Ready
-
-The frontend is production-ready with:
-
-- Optimized build process
-- Error boundaries and fallbacks
-- Responsive design
-- Cross-browser compatibility
-- Clean code architecture
-
-## 📄 License
-
-This project is part of a video subtitle processing system.
+- **Connection Error**: Make sure the backend orchestrator is running on `http://localhost:8000`
+- **CORS Issues**: The backend should have CORS enabled for the frontend domain
+- **File Upload Issues**: Ensure the video file is a supported format (MP4, MOV, etc.)

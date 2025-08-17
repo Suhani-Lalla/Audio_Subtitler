@@ -92,7 +92,11 @@ const HomePage = () => {
       navigate("/overlay");
     } catch (error) {
       console.error("Error processing video:", error);
-      alert(`Error processing video: ${error.message}`);
+      // More user-friendly error message
+      const errorMessage = error.message.includes("Failed to fetch")
+        ? "Unable to connect to the server. Please check if the backend is running."
+        : error.message;
+      alert(`Error processing video: ${errorMessage}`);
     } finally {
       setIsProcessing(false);
     }
