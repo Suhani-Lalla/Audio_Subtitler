@@ -1,4 +1,5 @@
 #overlay.py
+from fastapi import FastAPI
 from fastapi import APIRouter, File, UploadFile, Form
 from fastapi.responses import FileResponse, JSONResponse
 import subprocess
@@ -7,7 +8,11 @@ import shutil
 import tempfile
 import json
 
+
 router = APIRouter()
+
+app = FastAPI(title="Overlay API")
+app.include_router(router)
 
 def hex_to_ass_color(hex_color: str) -> str:
     hex_color = hex_color.lstrip('#')
