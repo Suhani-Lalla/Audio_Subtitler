@@ -19,7 +19,7 @@ import zipfile
 # =======================
 load_dotenv()
 
-EXTRACTOR_URL = os.getenv("EXTRACTOR_URL", "http://kubeflow-dgx-service/pipeline/extract")
+EXTRACTOR_URL = os.getenv("EXTRACTOR_URL", "https://9b57ef0fb8a7.ngrok-free.app/transcribe")
 TRANSLATOR_URL = os.getenv("TRANSLATOR_URL", "https://your-render-translate.onrender.com/translate")
 OVERLAY_URL    = os.getenv("OVERLAY_URL",    "https://your-render-overlay.onrender.com/overlay")
 
