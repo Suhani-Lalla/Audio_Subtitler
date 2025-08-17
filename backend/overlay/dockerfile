@@ -22,11 +22,9 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy app code
 COPY . .
 
-# Expose port (Render uses PORT env variable by default)
+# Render provides the port via $PORT
 EXPOSE 10000
+ENV PORT=$PORT
 
-# Set environment variable for Uvicorn
-ENV PORT 10000
-
-# Run FastAPI using uvicorn
-CMD ["uvicorn", "orchestrator:app", "--host", "0.0.0.0", "--port", "10000"]
+# Run FastAPI app with uvicorn
+CMD ["sh", "-c", "uvicorn overlay:app --host 0.0.0.0 --port $PORT"]
