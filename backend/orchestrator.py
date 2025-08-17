@@ -6,7 +6,7 @@ import tempfile
 import uuid
 from typing import Optional, List, Dict
 from contextlib import asynccontextmanager
-
+import multipart, io
 import httpx
 from fastapi import FastAPI, UploadFile, File, Form, HTTPException
 from fastapi.responses import StreamingResponse
@@ -82,7 +82,7 @@ async def call_extractor(video_path: str) -> (str, str):
                 if r.is_error:
                     raise HTTPException(status_code=502, detail=f"Extractor error: {r.status_code} {r.text}")
 
-                import multipart, io
+                
                 parser = multipart.MultipartParser(io.BytesIO(r.content), r.headers.get("content-type", ""))
                 srt_path = txt_path = None
                 for part in parser.parts():
