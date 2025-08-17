@@ -1,5 +1,5 @@
 // Backend API configuration
-export const API_BASE_URL = "http://localhost:8000";
+export const API_BASE_URL = "https://audio-subtitler-orchestrator.onrender.com";
 
 export const API_ENDPOINTS = {
   PROCESS_INITIAL: `${API_BASE_URL}/process_initial`,
