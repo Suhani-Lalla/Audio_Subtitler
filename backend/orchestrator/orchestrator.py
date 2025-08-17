@@ -46,7 +46,7 @@ async def _sleep_backoff(attempt: int) -> None:
     await asyncio.sleep(delay)
 
 @asynccontextmanager
-def get_httpx_client():
+async def get_httpx_client():
     timeout = httpx.Timeout(
         connect=CONNECT_TIMEOUT,
         read=READ_TIMEOUT,
