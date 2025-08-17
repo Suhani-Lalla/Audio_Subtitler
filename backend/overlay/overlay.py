@@ -8,11 +8,7 @@ import shutil
 import tempfile
 import json
 
-
-router = APIRouter()
-
 app = FastAPI(title="Overlay API")
-app.include_router(router)
 
 def hex_to_ass_color(hex_color: str) -> str:
     hex_color = hex_color.lstrip('#')
@@ -24,7 +20,7 @@ def hex_to_ass_color(hex_color: str) -> str:
 def escape_path_for_ffmpeg(path: str) -> str:
     return path.replace("\\", "/").replace(":", "\\:")
 
-@router.post("/overlay")
+@app.post("/overlay")
 async def burn_subtitles(
     video: UploadFile = File(...),
     srt: UploadFile = File(...),
